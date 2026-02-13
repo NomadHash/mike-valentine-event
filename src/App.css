@@ -6,6 +6,7 @@
 
 .valentine-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,9 +16,9 @@
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
-/* 배경 - 프리미엄 그라데이션 */
 .valentine-page::before {
   content: '';
   position: absolute;
@@ -48,6 +49,31 @@
   animation: cardAppear 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* 데스크톱: 카드·버튼 폭 넓혀서 여유 있게 */
+@media (min-width: 769px) {
+  .content {
+    max-width: 460px;
+    padding: 3rem 3rem;
+  }
+  .message {
+    font-size: 1.0625rem;
+  }
+  .quote {
+    font-size: 1.2rem;
+    padding: 1.25rem 2rem;
+  }
+  .buttons {
+    gap: 1.25rem;
+    min-height: 58px;
+  }
+  .btn-yes,
+  .btn-no {
+    padding: 1.125rem 2.5rem;
+    font-size: 1.125rem;
+    min-width: 140px;
+  }
+}
+
 @keyframes cardAppear {
   from {
     opacity: 0;
@@ -69,12 +95,8 @@
 }
 
 @keyframes emojiFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 .message {
@@ -98,8 +120,14 @@
   position: relative;
   letter-spacing: 0.02em;
   border: 1px solid rgba(233, 30, 99, 0.08);
-  box-shadow: 0 2px 8px rgba(233, 30, 99, 0.04) inset;
   box-shadow: 0 2px 8px rgba(233, 30, 99, 0.04);
+  animation: quoteFloat 1s ease-in-out infinite;
+}
+
+@keyframes quoteFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+
 }
 
 .buttons {
@@ -134,6 +162,15 @@
 
 .btn-yes--full {
   width: 100%;
+  animation: yesHeartbeat 1.2s ease-in-out infinite;
+}
+
+@keyframes yesHeartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.04); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.04); }
+  70% { transform: scale(1); }
 }
 
 .btn-yes:hover {
@@ -144,15 +181,21 @@
     0 12px 32px rgba(194, 24, 91, 0.25);
 }
 
+/* 도망 중일 때는 두근거림 유지, 호버 시에만 살짝 강조 */
+.btn-yes--full:hover {
+  transform: scale(1.05);
+  box-shadow: 
+    0 1px 0 rgba(255, 255, 255, 0.25) inset,
+    0 4px 12px rgba(233, 30, 99, 0.35),
+    0 12px 32px rgba(194, 24, 91, 0.25);
+}
+
 .btn-yes:active {
   transform: scale(0.98);
 }
 
-.btn-no--absolute {
-  position: absolute;
-}
-
 .btn-no {
+  touch-action: none;
   background: #ffffff;
   color: #c2185b;
   border: 2px solid rgba(233, 30, 99, 0.5);
@@ -163,7 +206,7 @@
   font-weight: 600;
   letter-spacing: -0.01em;
   box-shadow: 0 2px 8px rgba(233, 30, 99, 0.08);
-  will-change: transform;
+  /* 중요: 도망가기 전까지만 transform 애니메이션을 적용 */
   transition: transform 0.15s ease-out,
     background 0.2s ease,
     border-color 0.2s ease,
@@ -176,3 +219,97 @@
   box-shadow: 0 4px 16px rgba(233, 30, 99, 0.12);
 }
 
+/* 도망가는 중일 때 위치 강제 적용 및 애니메이션 제거 */
+.btn-no--absolute {
+  position: absolute;
+  /* 위치 이동 애니메이션을 꺼야 JS 계산과 실제 위치가 일치함 */
+  transition: none !important; 
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 2rem 1.5rem;
+    max-width: 360px;
+    width: calc(100% - 1.5rem);
+    border-radius: 24px;
+  }
+  .emojis {
+    font-size: 2.75rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5rem;
+  }
+  .message {
+    font-size: 0.9375rem;
+    margin-bottom: 1.25rem;
+  }
+  .quote {
+    font-size: 1rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 2rem;
+    border-radius: 16px;
+  }
+  .buttons {
+    gap: 0.875rem;
+    min-height: 48px;
+  }
+  .btn-yes, .btn-no {
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .valentine-page {
+    padding: 1rem 0;
+    min-height: 100dvh;
+    min-height: 100vh;
+  }
+  .content {
+    padding: 1.5rem 2rem;
+    max-width: 100%;
+    width: calc(100% - 2rem);
+    border-radius: 20px;
+    margin: 0 0.5rem;
+  }
+  .emojis {
+    font-size: 2.25rem;
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.35rem;
+  }
+  .message {
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+  .quote {
+    font-size: 0.9375rem;
+    padding: 0.875rem 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 14px;
+  }
+  .buttons {
+    gap: 0.75rem;
+    min-height: 44px;
+  }
+  .btn-yes, .btn-no {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+    border-radius: 40px;
+  }
+}
+
+@media (max-height: 600px) and (max-width: 768px) {
+  .valentine-page {
+    align-items: flex-start;
+    padding-top: 1rem;
+  }
+  .content {
+    padding: 1.25rem 1rem;
+  }
+  .emojis {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .quote {
+    margin-bottom: 1rem;
+  }
+}
