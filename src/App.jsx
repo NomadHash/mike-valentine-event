@@ -2,13 +2,23 @@ import { useRef, useEffect, useState } from 'react'
 import './App.css'
 
 const COUPANG_LINKS = [
-  'https://link.coupang.com/a/dLKm0w',
-  'https://link.coupang.com/a/dLKnyK',
-  'https://link.coupang.com/a/dLKnSH',
+  'https://link.coupang.com/a/dLO0Mx',
+  'https://link.coupang.com/a/dLO1da',
+  'https://link.coupang.com/a/dLO1ri',
+  'https://link.coupang.com/a/dLO1U7',
+  'https://link.coupang.com/a/dLO17w',
+  'https://link.coupang.com/a/dLO2ka',
 ]
 
 const CHASE_RADIUS = 80 // 반응 거리
 const SPEED_PER_SECOND = 1300 // 초당 이동 픽셀 (더 멀리 도망)
+const WALL_KICK = 100 // 벽/구석에 붙었을 때 한 번에 튕겨 나가는 거리 (데스크톱)
+const WALL_KICK_MOBILE = 50 // 모바일에서는 덜 튕기도록
+
+const getWallKick = () => {
+  const w = window.visualViewport?.width ?? window.innerWidth
+  return w <= 768 ? WALL_KICK_MOBILE : WALL_KICK
+}
 
 const getVisibleBounds = () => {
   const padding = 24
@@ -38,13 +48,20 @@ function App() {
   const cursorRef = useRef({ x: 0, y: 0 })
   const posRef = useRef({ x: 0, y: 0 })
   const [hasRunAway, setHasRunAway] = useState(false)
+  const [showLoading, setShowLoading] = useState(true)
   const absPosRef = useRef({ left: 0, top: 0 })
   const lastChaseEndRef = useRef(0)
+
+  // 초기 로딩: 페이드인 → 3초 유지 → 페이드아웃 후 제거
+  useEffect(() => {
+    const t = setTimeout(() => setShowLoading(false), 3000)
+    return () => clearTimeout(t)
+  }, [])
 
   const handleYesClick = () => {
     if (Date.now() - lastChaseEndRef.current < 400) return
     const randomIndex = Math.floor(Math.random() * COUPANG_LINKS.length)
-    window.location.href = COUPANG_LINKS[randomIndex]
+    window.open(COUPANG_LINKS[randomIndex], '_blank', 'noopener,noreferrer')
   }
 
   // 애니메이션 프레임마다 실행될 함수 (부드러운 움직임 핵심)
@@ -63,6 +80,7 @@ function App() {
     const btn = noButtonRef.current
     if (!btn) return
 
+    const bounds = getVisibleBounds()
     const rect = btn.getBoundingClientRect()
     const bx = rect.left + rect.width / 2
     const by = rect.top + rect.height / 2
@@ -72,22 +90,54 @@ function App() {
     const dy = cy - by
     const dist = Math.sqrt(dx * dx + dy * dy) || 1
 
-    // 도망가는 방향 벡터
-    const nx = -dx / dist
-    const ny = -dy / dist
+    // 도망가는 방향 (커서 반대쪽)
+    let nx = -dx / dist
+    let ny = -dy / dist
 
-    // 계산된 거리만큼 이동
-    posRef.current.x += nx * stepSize
-    posRef.current.y += ny * stepSize
+    // 벽에 붙었는지 (여유 있게 판정해서 진동 방지)
+    const margin = 8
+    const atLeft = rect.left <= bounds.minX + margin
+    const atRight = rect.right >= bounds.maxX - margin
+    const atTop = rect.top <= bounds.minY + margin
+    const atBottom = rect.bottom >= bounds.maxY - margin
 
-    // 1차 적용
+    // 벽 쪽으로 가는 성분 제거
+    if (atLeft && nx < 0) nx = 0
+    if (atRight && nx > 0) nx = 0
+    if (atTop && ny < 0) ny = 0
+    if (atBottom && ny > 0) ny = 0
+
+    const slideLen = Math.sqrt(nx * nx + ny * ny)
+    const SQ2 = 1 / Math.sqrt(2)
+
+    // 벽/구석에 막혀서 움직일 수 없을 때만 한 번에 크게 튕겨냄
+    let moveDistance = stepSize
+    if (slideLen < 0.01) {
+      if (atLeft && atTop) { nx = SQ2; ny = SQ2 }
+      else if (atLeft && atBottom) { nx = SQ2; ny = -SQ2 }
+      else if (atRight && atTop) { nx = -SQ2; ny = SQ2 }
+      else if (atRight && atBottom) { nx = -SQ2; ny = -SQ2 }
+      else if (atLeft) { nx = 1; ny = 0 }
+      else if (atRight) { nx = -1; ny = 0 }
+      else if (atTop) { nx = 0; ny = 1 }
+      else if (atBottom) { nx = 0; ny = -1 }
+      moveDistance = getWallKick()
+    } else {
+      nx /= slideLen
+      ny /= slideLen
+      // 벽에 붙어 있으면 (구석 아님) 이번 프레임만 크게 튕겨서 벽에서 멀어지게
+      if (atLeft || atRight || atTop || atBottom) {
+        moveDistance = getWallKick()
+      }
+    }
+
+    posRef.current.x += nx * moveDistance
+    posRef.current.y += ny * moveDistance
+
     btn.style.transform = `translate(${posRef.current.x}px, ${posRef.current.y}px)`
 
-    // 벽 충돌 보정
-    const bounds = getVisibleBounds()
+    // 벽 안으로만 보정
     let newRect = btn.getBoundingClientRect()
-    
-    // 반복 보정으로 끼임 현상 방지
     for (let i = 0; i < 3; i++) {
       let changed = false
       if (newRect.left < bounds.minX) {
@@ -107,7 +157,6 @@ function App() {
         changed = true
       }
       if (!changed) break
-      
       btn.style.transform = `translate(${posRef.current.x}px, ${posRef.current.y}px)`
       newRect = btn.getBoundingClientRect()
     }
@@ -208,6 +257,10 @@ function App() {
     stopChase()
   }
 
+  const handleNoButtonClick = () => {
+    window.close()
+  }
+
   const clampButtonToViewport = () => {
     const btn = noButtonRef.current
     if (!btn || !hasRunAway) return
@@ -240,22 +293,35 @@ function App() {
   }, [hasRunAway])
 
   return (
-    <div
-      ref={pageRef}
-      className="valentine-page"
-      onPointerMove={handlePointerMove}
-      onPointerLeave={stopChase}
-    >
+    <>
+      {showLoading && (
+        <div className="loading-screen" aria-hidden="true">
+          <span className="loading-screen__emoji">💌</span>
+        </div>
+      )}
+      <div
+        ref={pageRef}
+        className={`valentine-page ${!showLoading ? 'valentine-page--visible' : ''}`}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={stopChase}
+      >
+      <div className="valentine-page__main">
       <div className="content">
-        <div className="emojis">
-          <span>❤️</span>
-          <span>🌹</span>
-          <span>🍫</span>
+        <div className="emojis !pt-[24px]">
+          <span className="emoji emoji--1">❤️</span>
+          <span className="emoji emoji--2">🌹</span>
+          <span className="emoji emoji--3">🍫</span>
         </div>
 
         <p className="message">남자친구가 발렌타인 편지를 보냈어요! ✉️</p>
 
-        <p className="quote">자기야 나 초콜릿 사줘♥️</p>
+        <div className="quote-box">
+          <p className="quote-label">
+            <span className="quote-label-icon" aria-hidden>💌</span>
+            메세지
+          </p>
+          <p className="quote">자기야 나 초콜릿 사줘♥️</p>
+        </div>
 
         <div ref={buttonsRef} className="buttons">
           <button
@@ -281,12 +347,20 @@ function App() {
             onPointerMove={handleNoButtonPointerMove}
             onPointerUp={handleNoButtonPointerUp}
             onPointerCancel={handleNoButtonPointerUp}
+            onClick={handleNoButtonClick}
           >
             No💔
           </button>
         </div>
+
+        <p className="partner-disclaimer text-center !text-[12px]">
+        이 사이트는 쿠팡 파트너스 활동의 일환으로<br/>이에 따른 일정액의 수수료를 제공받습니다.
+      </p>
       </div>
+      </div>
+
     </div>
+    </>
   )
 }
 
