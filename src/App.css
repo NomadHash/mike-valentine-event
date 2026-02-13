@@ -1,0 +1,178 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.valentine-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  position: relative;
+  background: linear-gradient(165deg, #fef6f8 0%, #fce8ec 25%, #fadde4 50%, #fcf0f3 75%, #fef8fa 100%);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 배경 - 프리미엄 그라데이션 */
+.valentine-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 182, 193, 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 192, 203, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 30% at 0% 80%, rgba(255, 182, 193, 0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.content {
+  text-align: center;
+  padding: 2.75rem 2.25rem;
+  max-width: 400px;
+  width: calc(100% - 2rem);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28px;
+  box-shadow: 
+    0 1px 1px rgba(255, 255, 255, 0.95) inset,
+    0 2px 4px rgba(233, 30, 99, 0.04),
+    0 8px 24px rgba(233, 30, 99, 0.08),
+    0 24px 48px rgba(194, 24, 91, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  position: relative;
+  z-index: 1;
+  animation: cardAppear 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.emojis {
+  font-size: 3.25rem;
+  margin-bottom: 1.875rem;
+  letter-spacing: 0.75rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(233, 30, 99, 0.1));
+  animation: emojiFloat 4s ease-in-out infinite;
+}
+
+@keyframes emojiFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.message {
+  font-size: 1rem;
+  color: #4a3542;
+  margin-bottom: 1.375rem;
+  line-height: 1.75;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.quote {
+  font-size: 1.1rem;
+  color: #b71c4a;
+  font-weight: 600;
+  margin-bottom: 2.375rem;
+  font-family: 'Caveat', cursive;
+  padding: 1.125rem 1.75rem;
+  background: rgba(255, 240, 245, 0.5);
+  border-radius: 20px;
+  position: relative;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(233, 30, 99, 0.08);
+  box-shadow: 0 2px 8px rgba(233, 30, 99, 0.04) inset;
+  box-shadow: 0 2px 8px rgba(233, 30, 99, 0.04);
+}
+
+.buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  min-height: 52px;
+  width: 100%;
+  position: relative;
+}
+
+.btn-yes {
+  background: linear-gradient(145deg, #e91e63 0%, #d81b60 40%, #c2185b 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2.125rem;
+  font-size: 1.0625rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: 
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 2px 8px rgba(233, 30, 99, 0.25),
+    0 8px 24px rgba(194, 24, 91, 0.2);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease,
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-yes--full {
+  width: 100%;
+}
+
+.btn-yes:hover {
+  transform: scale(1.02);
+  box-shadow: 
+    0 1px 0 rgba(255, 255, 255, 0.25) inset,
+    0 4px 12px rgba(233, 30, 99, 0.35),
+    0 12px 32px rgba(194, 24, 91, 0.25);
+}
+
+.btn-yes:active {
+  transform: scale(0.98);
+}
+
+.btn-no--absolute {
+  position: absolute;
+}
+
+.btn-no {
+  background: #ffffff;
+  color: #c2185b;
+  border: 2px solid rgba(233, 30, 99, 0.5);
+  padding: 1rem 2.125rem;
+  font-size: 1.0625rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: 0 2px 8px rgba(233, 30, 99, 0.08);
+  will-change: transform;
+  transition: transform 0.15s ease-out,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn-no:hover {
+  background: #fffbfc;
+  border-color: rgba(233, 30, 99, 0.7);
+  box-shadow: 0 4px 16px rgba(233, 30, 99, 0.12);
+}
+
